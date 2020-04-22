@@ -79,8 +79,8 @@ class PresentationPygmentsFormatter(Formatter):
 
 class PPTXWriter:
 
-    def __init__(self):
-        self.presentation = PPTXPresentation()
+    def __init__(self, template):
+        self.presentation = PPTXPresentation(template)
 
     def save(self, outfn):
         self.presentation.save(outfn)

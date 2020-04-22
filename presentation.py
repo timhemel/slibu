@@ -42,9 +42,9 @@ def set_run_verbatim(run, key, value):
 
 
 class PPTXPresentation:
-    def __init__(self):
+    def __init__(self, template):
         # self.prs = Presentation()
-        self.prs = Presentation("reference.pptx")
+        self.prs = Presentation(template)
         self.cphs = []
         self.tfs = []
         self.tlys = []
