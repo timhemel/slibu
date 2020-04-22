@@ -280,7 +280,7 @@ class PPTXPresentation:
         # BODY=2, OBJECT=7
 
     def set_title_box(self, options):
-        title_box = self.find_placeholder(1)
+        title_box = self.slide.shapes.title
         dim = self.get_box_dimensions_from_shape(title_box)
         dim = self.update_box_dimensions(dim,
                 self.make_length_from_options(options,'left'),
