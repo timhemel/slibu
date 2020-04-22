@@ -1,6 +1,6 @@
 from mistune.directives.base import Directive
 from collections import OrderedDict
-from directive_util import parse_length, parse_color, parse_font_size
+from directive_util import parse_length, parse_color, parse_font_size, parse_string, parse_float, parse_int_list
 
 
 class BoxDirective(Directive):
@@ -11,7 +11,10 @@ class BoxDirective(Directive):
             'width': parse_length,
             'height': parse_length,
             'bg_color': parse_color,
+            'bg_alpha': parse_float,
             'font_size': parse_font_size,
+            'valign': parse_string,
+            'column_widths': parse_int_list,
     }
 
 

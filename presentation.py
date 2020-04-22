@@ -1,6 +1,7 @@
 from pptx import Presentation
 from pptx.util import Centipoints, Cm, Emu, Inches, Mm, Pt
 from pptx.enum.text import MSO_AUTO_SIZE
+from pptx.enum.text import MSO_ANCHOR
 from pptx.dml.color import RGBColor
 from lxml import etree
 from PIL import Image
@@ -16,10 +17,19 @@ def set_font_color(run, key, value):
 def set_font_size(run, key, value):
     run.font.size = Pt(value)
 
-def set_shape_bg_color(tf, key, value):
+def set_shape_bg_color(shape, key, value):
     rgb = RGBColor.from_string(value)
-    tf.fill.solid()
-    tf.fill.fore_color.rgb = rgb
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = rgb
+
+def set_shape_bg_alpha(shape, key, value):
+    fill_elt = shape._sp.spPr.solidFill
+    alpha = round(value * 100000)
+    for clr in ['srgbClr', 'schemeClr']:
+        try:
+            fill_elt.__getattribute__(clr).insert(0, etree.Element("{http://schemas.openxmlformats.org/drawingml/2006/main}alpha", val=str(alpha)))
+        except AttributeError:
+            pass
 
 def set_unsupported(run, key, value):
     pass
@@ -39,6 +49,13 @@ def set_run_verbatim(run, key, value):
     if value == False:
         run.text = run.text.replace('\n',' ')
 
+def set_tf_valign(tf, key, value):
+    if value == 'top':
+        tf.vertical_anchor = MSO_ANCHOR.TOP
+    elif value == 'middle':
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    elif value == 'bottom':
+        tf.vertical_anchor = MSO_ANCHOR.BOTTOM
 
 
 class PPTXPresentation:
@@ -126,7 +143,7 @@ class PPTXPresentation:
         run = self.paragraph.add_run()
         return run
 
-    def add_picture(self, src, left=None, top=None, width=None, height=None):
+    def add_picture(self, src, left=None, top=None, width=None, height=None, **options):
         left = self.make_length('left', left)
         top = self.make_length('top', top)
         width = self.make_length('width', width)
@@ -138,8 +155,9 @@ class PPTXPresentation:
             top = self.cph().top
 
         if width is None and height is None:
-            width = self.cph().width
-            height = self.cph().height
+            # TODO: fix this so that in img tags, we use the actual dimensions, not scaling
+            width = self.get_cph_width()
+            height = self.get_cph_height()
             img = Image.open(src)
             actual_width = img.width
             actual_height = img.height
@@ -151,11 +169,29 @@ class PPTXPresentation:
         picture = self.slide.shapes.add_picture(src,
                 left, top, width, height)
 
+        rotation = options.get('rotation')
+        if rotation is not None:
+            picture.rotation = rotation
+
     def add_table(self, rows, columns):
         cph = self.cph()
         # shape = self.slide.shapes.add_table(rows, columns, cph.left, cph.top, cph.width, cph.height)
         shape = self.slide.shapes.add_table(rows, columns, cph.left, cph.top, cph.width, 0)
         self.table = shape.table
+        # set column widths
+        print(dir(self.table))
+        print("TBL width", self.cph().width)
+        table_width = self.cph().width
+
+        col_widths = self.tly().get('column_widths')
+        if col_widths is not None:
+            col_total = sum(col_widths)
+            col_pcts = [ c/col_total for c in col_widths ]
+            # print("COL PCT", col_pcts)
+            for i,c in enumerate(col_pcts):
+                # print(dir(self.table.columns))
+                # print(self.table.columns[i])
+                self.table.columns[i].width = round(c * table_width)
 
     def start_table_cell(self, row, column):
         cell = self.table.cell(row, column)
@@ -168,7 +204,10 @@ class PPTXPresentation:
 
     def start_box(self, **options):
 
-        dim = self.get_box_dimensions_from_shape(self.cph())
+        if self.cph() is not None:
+            dim = self.get_box_dimensions_from_shape(self.cph())
+        else:
+            dim = 0, 0, self.prs.slide_width, self.prs.slide_height
         dim = self.update_box_dimensions(dim,
                 self.make_length_from_options(options, 'left'),
                 self.make_length_from_options(options, 'top'),
@@ -184,13 +223,19 @@ class PPTXPresentation:
 
         attr_setters = {
                 'bg_color': set_shape_bg_color,
+                'bg_alpha': set_shape_bg_alpha,
+                'valign': set_tf_valign,
         }
 
         # shape options
-        for key in ['bg_color']:
+        for key in ['bg_color', 'bg_alpha']:
             setter = attr_setters.get(key)
             set_attr_on_pptx_object(box, setter, key, options, self.tly())
         # TODO: other things such as alignment, word wrap, etc
+
+        for key in ['valign']:
+            setter = attr_setters.get(key)
+            set_attr_on_pptx_object(text_frame, setter, key, options, self.tly())
 
         self._push_cph(box)
         self._push_tf(text_frame, True)
@@ -293,6 +338,25 @@ class PPTXPresentation:
         title_box.width = dim[2]
         title_box.height = dim[3]
 
+        bg_color = options.get('bg_color')
+        if bg_color is not None:
+            rgb = RGBColor.from_string(bg_color)
+            title_box.fill.solid()
+            title_box.fill.fore_color.rgb = rgb
+        # set margins on title textframe
+        
+        margin_props = ['margin_left', 'margin_right', 'margin_top', 'margin_bottom' ]
+
+        for p in margin_props:
+            m = self.make_length_from_options(options, p)
+            if m is not None:
+                title_box.text_frame.__setattr__(p, m)
+
+        # raise title to top
+        cursor_sp = self.slide.shapes[-1]._element
+        cursor_sp.addnext(title_box._element)
+
+
     def _push_cph(self, cph):
         self.cphs.append(cph)
 
@@ -328,8 +392,21 @@ class PPTXPresentation:
     def tly(self):
         return self.tlys[-1]
 
+    def get_cph_width(self):
+        cph = self.cph()
+        if cph is None:
+            return self.prs.slide_width
+        return cph.width
+
+    def get_cph_height(self):
+        cph = self.cph()
+        if cph is None:
+            return self.prs.slide_height
+        return cph.height
+
+
     def length_percent(self, key, value):
-        if key == 'left' or key == 'width':
+        if key in ['left', 'margin_left', 'margin_right', 'width']:
             return value * self.prs.slide_width / 100
         else:
             return value * self.prs.slide_height / 100

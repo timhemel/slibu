@@ -10,6 +10,11 @@ class TitleDirective(Directive):
             'top': parse_length,
             'width': parse_length,
             'height': parse_length,
+            'bg_color': parse_color,
+            'margin_left': parse_length,
+            'margin_right': parse_length,
+            'margin_top': parse_length,
+            'margin_bottom': parse_length,
     }
 
 

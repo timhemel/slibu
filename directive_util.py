@@ -32,3 +32,10 @@ def parse_bool(v):
     if v.lower() == 'true':
         return True
     return False
+
+def parse_float(v):
+    return float(v)
+
+def parse_int_list(v):
+    return [ int(x) for x in v.strip().split() ]
+
