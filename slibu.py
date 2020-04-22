@@ -28,6 +28,4 @@ def build(out_file, template):
     r.feed(markdown(sys.stdin.read()))
     r.save(out_file)
 
-if __name__=="__main__":
-    build()
 
