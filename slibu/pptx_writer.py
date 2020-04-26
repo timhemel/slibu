@@ -3,7 +3,7 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatter import Formatter
 import re
-from presentation import PPTXPresentation
+from .presentation import PPTXPresentation
 
 class PresentationPygmentsFormatter(Formatter):
 

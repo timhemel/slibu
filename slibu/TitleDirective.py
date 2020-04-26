@@ -1,6 +1,6 @@
 from mistune.directives.base import Directive
 from collections import OrderedDict
-from directive_util import parse_length, parse_color
+from .directive_util import parse_length, parse_color
 
 
 class TitleDirective(Directive):

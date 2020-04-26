@@ -1,7 +1,7 @@
 
 from mistune.directives.base import Directive
 from collections import OrderedDict
-from directive_util import parse_string, parse_length
+from .directive_util import parse_string, parse_length
 
 
 class SlideDirective(Directive):
