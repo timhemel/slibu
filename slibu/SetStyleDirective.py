@@ -1,6 +1,6 @@
 from mistune.directives.base import Directive
 from collections import OrderedDict
-from directive_util import parse_length, parse_color, parse_font_size, parse_string, parse_int_list
+from .directive_util import parse_length, parse_color, parse_font_size, parse_string, parse_int_list
 
 class SetStyleDirective(Directive):
 

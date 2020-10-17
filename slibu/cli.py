@@ -6,13 +6,13 @@ import sys
 import click
 import mistune
 from mistune import AstRenderer
-from ImageDirective import ImageDirective
-from BoxDirective import BoxDirective
-from TitleDirective import TitleDirective
-from SlideDirective import SlideDirective
-from TextStyleDirective import TextStyleDirective
-from SetStyleDirective import SetStyleDirective
-from pptx_writer import PPTXWriter
+from .ImageDirective import ImageDirective
+from .BoxDirective import BoxDirective
+from .TitleDirective import TitleDirective
+from .SlideDirective import SlideDirective
+from .TextStyleDirective import TextStyleDirective
+from .SetStyleDirective import SetStyleDirective
+from .pptx_writer import PPTXWriter
 
 @click.command()
 @click.option('-o', '--out-file', default='out.pptx', help='write output to this file (default out.pptx)')

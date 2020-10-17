@@ -1,9 +1,10 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='slibu',
     version='0.1',
-    py_modules=['slibu'],
+    # py_modules=['slibu'],
+    packages=find_packages(include=['slibu']),
     install_requires=[
         'Click',
         'mistune==2.0.0a2',
@@ -13,6 +14,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        slibu=slibu:cli
+        slibu=slibu.cli:build
     ''',
 )
