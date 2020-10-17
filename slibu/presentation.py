@@ -1,3 +1,4 @@
+# coding: utf-8
 from pptx import Presentation
 from pptx.util import Centipoints, Cm, Emu, Inches, Mm, Pt
 from pptx.enum.text import MSO_AUTO_SIZE
@@ -156,6 +157,7 @@ class PPTXPresentation:
 
         if width is None and height is None:
             # TODO: fix this so that in img tags, we use the actual dimensions, not scaling
+            # add a 'scale' option to this method
             width = self.get_cph_width()
             height = self.get_cph_height()
             img = Image.open(src)

@@ -4,7 +4,7 @@ setup(
     name='slibu',
     version='0.1',
     # py_modules=['slibu'],
-    packages=find_packages(),
+    packages=find_packages(include=['slibu']),
     include_package_data=True,
     install_requires=[
         'Click',
@@ -15,6 +15,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        slibu=slibu.run:build
+        slibu=slibu.cli:build
     ''',
 )
