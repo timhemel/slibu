@@ -5,6 +5,7 @@ setup(
     version='0.1',
     # py_modules=['slibu'],
     packages=find_packages(include=['slibu']),
+    include_package_data=True,
     install_requires=[
         'Click',
         'mistune==2.0.0a2',
